@@ -33,3 +33,6 @@ with open("tweets.csv", "w", newline="", encoding="utf-8") as file:
 
 driver.quit()
 print("Scraping completed and saved to tweets.csv")
+
+
+#random comment here 
