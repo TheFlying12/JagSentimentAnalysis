@@ -5,34 +5,43 @@ import time
 import csv
 
 # Set up the Selenium WebDriver
-driver = webdriver.Chrome()  # Replace with executable_path="path/to/chromedriver" if needed
-url = "https://twitter.com/search?q=%23YourHashtag&src=typed_query&f=live"
+driver = webdriver.Chrome() 
+url = "https://x.com/Jaguar/status/1858800846646948155"
 driver.get(url)
 
 # Allow time for the page to load
 time.sleep(5)
 
-# Scroll and extract tweets
-tweets = []
+tweets_data = []  # List to store tweet text and dates
 for _ in range(10):  # Adjust range for more scrolls
-    tweet_elements = driver.find_elements(By.CSS_SELECTOR, "article div[lang]")
+    tweet_elements = driver.find_elements(By.CSS_SELECTOR, "article")
     for element in tweet_elements:
-        tweets.append(element.text)
+        try:
+            # Extract the tweet text
+            tweet_text = element.find_element(By.CSS_SELECTOR, "div[lang]").text
+            
+            # Extract the date (time element contains the timestamp)
+            timestamp_element = element.find_element(By.TAG_NAME, "time")
+            tweet_date = timestamp_element.get_attribute("datetime")  # ISO 8601 format
+            
+            # Append tweet data
+            tweets_data.append((tweet_text, tweet_date))
+        except Exception as e:
+            # Skip if any element is missing (e.g., ad tweets)
+            continue
     driver.find_element(By.TAG_NAME, "body").send_keys(Keys.END)
-    time.sleep(3)  # Allow time for loading more tweets
+    time.sleep(5)  # Allow time for loading more tweets
 
 # Remove duplicates
-tweets = list(set(tweets))
+tweets_data = list(set(tweets_data))
 
 # Save tweets to a CSV file
-with open("tweets.csv", "w", newline="", encoding="utf-8") as file:
+with open("tweets_with_dates.csv", "w", newline="", encoding="utf-8") as file:
     writer = csv.writer(file)
-    writer.writerow(["Tweet"])
-    for tweet in tweets:
-        writer.writerow([tweet])
+    writer.writerow(["Tweet", "Date"])
+    for tweet_text, tweet_date in tweets_data:
+        writer.writerow([tweet_text, tweet_date])
+
 
 driver.quit()
 print("Scraping completed and saved to tweets.csv")
-
-
-#random comment here 
